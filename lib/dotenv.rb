@@ -1,4 +1,5 @@
 require "dotenv/parser"
+require "dotenv/native_shell_parser"
 require "dotenv/environment"
 require "dotenv/missing_keys"
 

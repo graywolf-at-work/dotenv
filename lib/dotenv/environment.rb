@@ -10,7 +10,11 @@ module Dotenv
     end
 
     def load(is_load = false)
-      update Parser.call(read, is_load)
+      update(if NativeShellParser.works?
+               NativeShellParser.call(read, is_load)
+             else
+               Parser.call(read, is_load)
+             end)
     end
 
     def read
