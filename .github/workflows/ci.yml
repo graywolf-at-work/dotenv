@@ -1,7 +1,8 @@
 name: CI
 on:
   push:
-    branches: [master]
+    # FIXME: Undo this change
+    branches: [posix-shell]
   pull_request:
 jobs:
   build:
@@ -9,6 +10,7 @@ jobs:
     strategy:
       matrix:
         ruby: ['2.5', '2.6', '2.7', '3.0']
+        shell: ['NONE', 'dash', 'bash', 'zsh', 'ash']
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -29,3 +31,21 @@ jobs:
         run: bundle install --jobs 4 --retry 3
       - name: Run Rake
         run: bundle exec rake
+        if: ${{ matrix.shell == 'NONE' }}
+
+      - name: Install shell
+        run: sudo apt-get install -y ${{ matrix.shell }}
+        if: ${{ matrix.shell != 'NONE' && matrix.shell != 'ash' }}
+      - name: Install shell
+        run: sudo apt-get install -y busybox
+        if: ${{ matrix.shell != 'NONE' && matrix.shell == 'ash' }}
+
+      - name: Symlink ash
+        run: sudo ln -s /usr/bin/busybox /usr/local/bin/ash
+        if: ${{ matrix.shell == 'ash' }}
+
+      - name: Run Rake with shell
+        env:
+          SHELL: ${{ matrix.shell }}
+        run: bundle exec rake
+        if: ${{ matrix.shell != 'NONE' }}
